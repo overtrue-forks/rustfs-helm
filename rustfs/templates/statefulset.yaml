@@ -3,7 +3,6 @@ kind: StatefulSet
 metadata:
   name: {{ include "rustfs.fullname" . }}
 spec:
-  serviceName: {{ include "rustfs.fullname" . }}
   serviceName: {{ include "rustfs.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
   podManagementPolicy: Parallel
@@ -39,7 +38,7 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           command: [ "/bin/sh", "-c" ]
-          args: [ "unset RUST_LOG && /usr/bin/rustfs $RUSTFS_VOLUMES" ]
+          args: [ "/usr/bin/rustfs $RUSTFS_VOLUMES" ]
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.ep_port }}
@@ -66,29 +65,21 @@ spec:
           volumeMounts:
             - name: logs
               mountPath: /logs
-        #    - name: entrypoint
-        #      mountPath: /entrypoint.sh
-        #      subPath: entrypoint.sh
-            - name: data-rustfs-0
-              mountPath: /data/rustfs0
-            - name: data-rustfs-1
-              mountPath: /data/rustfs1
-            - name: data-rustfs-2
-              mountPath: /data/rustfs2
-            - name: data-rustfs-3
-              mountPath: /data/rustfs3
+            {{- range $i := until (int .Values.replicaCount) }}
+            - name: data-rustfs-{{ $i }}
+              mountPath: /data/rustfs{{ $i }}
+            {{- end }}
       volumes:
         - name: logs
           emptyDir: {}
-#        - name: entrypoint
-#          configMap:
-#            name: entrypoint
-#            defaultMode: 0755
-        - name: data-rustfs-0
-          emptyDir: {}
-        - name: data-rustfs-1
-          emptyDir: {}
-        - name: data-rustfs-2
-          emptyDir: {}
-        - name: data-rustfs-3
-          emptyDir: {}
+  volumeClaimTemplates:
+  {{- range $i := until (int .Values.replicaCount) }}
+    - metadata:
+        name: data-rustfs-{{ $i }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ $.Values.storageclass.name }}
+        resources:
+          requests:
+            storage: {{ $.Values.storageclass.size}}
+  {{- end }}

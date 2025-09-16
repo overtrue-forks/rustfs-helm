@@ -136,3 +136,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+storageclass:
+  name: local-path
+  size: 500Mi
