@@ -28,6 +28,7 @@ metadata:
     {{- include "rustfs.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  #  type: LoadBalancer
   publishNotReadyAddresses: true
   ports:
     - port: {{ .Values.service.ep_port }}

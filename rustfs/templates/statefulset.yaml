@@ -17,6 +17,7 @@ spec:
       initContainers:
         - name: init-step
           image: busybox
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - sh
             - -c
