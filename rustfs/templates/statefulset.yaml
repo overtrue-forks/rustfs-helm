@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rustfs.fullname" . }}
+spec:
+  serviceName: {{ include "rustfs.fullname" . }}
+  serviceName: {{ include "rustfs.fullname" . }}-headless
+  replicas: {{ .Values.replicaCount }}
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: {{ include "rustfs.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "rustfs.name" . }}
+    spec:
+      initContainers:
+        - name: init-step
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              for i in $(seq 0 4); do
+                 mkdir -p /data/rustfs$i
+                 chown -R 1000:1000 /data/rustfs$i
+              done;
+          volumeMounts:
+            - name: data-rustfs-0
+              mountPath: /data/rustfs0
+            - name: data-rustfs-1
+              mountPath: /data/rustfs1
+            - name: data-rustfs-2
+              mountPath: /data/rustfs2
+            - name: data-rustfs-3
+              mountPath: /data/rustfs3
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: [ "/bin/sh", "-c" ]
+          args: [ "unset RUST_LOG && /usr/bin/rustfs $RUSTFS_VOLUMES" ]
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.ep_port }}
+              name: endpoint
+            - containerPort: {{ .Values.service.console_port }}
+              name: console
+          envFrom:
+            - configMapRef:
+                name: {{ include "rustfs.fullname" . }}-config
+            - secretRef:
+                name: {{ include "rustfs.fullname" . }}-secret
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
+          readinessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: logs
+              mountPath: /logs
+        #    - name: entrypoint
+        #      mountPath: /entrypoint.sh
+        #      subPath: entrypoint.sh
+            - name: data-rustfs-0
+              mountPath: /data/rustfs0
+            - name: data-rustfs-1
+              mountPath: /data/rustfs1
+            - name: data-rustfs-2
+              mountPath: /data/rustfs2
+            - name: data-rustfs-3
+              mountPath: /data/rustfs3
+      volumes:
+        - name: logs
+          emptyDir: {}
+#        - name: entrypoint
+#          configMap:
+#            name: entrypoint
+#            defaultMode: 0755
+        - name: data-rustfs-0
+          emptyDir: {}
+        - name: data-rustfs-1
+          emptyDir: {}
+        - name: data-rustfs-2
+          emptyDir: {}
+        - name: data-rustfs-3
+          emptyDir: {}

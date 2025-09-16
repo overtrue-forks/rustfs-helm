@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rustfs.fullname" . }}-headless
+  labels:
+    {{- include "rustfs.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - port: {{ .Values.service.ep_port }}
+      targetPort: 9000
+      protocol: TCP
+      name: endpoint
+    - port: {{ .Values.service.console_port }}
+      targetPort: 9001
+      protocol: TCP
+      name: console
+  selector:
+    app: {{ include "rustfs.name" . }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rustfs.fullname" . }}-svc
+  labels:
+    {{- include "rustfs.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  publishNotReadyAddresses: true
+  ports:
+    - port: {{ .Values.service.ep_port }}
+      targetPort: 9000
+      protocol: TCP
+      name: endpoint
+    - port: {{ .Values.service.console_port }}
+      targetPort: 9001
+      protocol: TCP
+      name: console
+  selector:
+    app: {{ include "rustfs.name" . }}
