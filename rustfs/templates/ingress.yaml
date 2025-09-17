@@ -37,7 +37,7 @@ spec:
               service:
                 name: {{ include "rustfs.fullname" $ }}-svc
                 port:
-                  number: {{ $.Values.service.ep_port }}
+                  number: 80
           {{- end }}
     {{- end }}
 {{- end }}

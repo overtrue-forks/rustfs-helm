@@ -8,8 +8,8 @@ spec:
   clusterIP: None
   publishNotReadyAddresses: true
   ports:
-    - port: {{ .Values.service.ep_port }}
-      targetPort: 9000
+    - port: 80
+      targetPort: {{ .Values.service.ep_port }}
       protocol: TCP
       name: endpoint
     - port: {{ .Values.service.console_port }}
@@ -31,12 +31,12 @@ spec:
   #  type: LoadBalancer
   publishNotReadyAddresses: true
   ports:
-    - port: {{ .Values.service.ep_port }}
-      targetPort: 9000
+    - port: 80
+      targetPort: {{ .Values.service.ep_port }}
       protocol: TCP
       name: endpoint
     - port: {{ .Values.service.console_port }}
-      targetPort: 9001
+      targetPort: {{ .Values.service.console_port }}
       protocol: TCP
       name: console
   selector:
