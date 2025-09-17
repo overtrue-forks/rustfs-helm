@@ -51,3 +51,28 @@ Uninstalling the rustfs installation with command,
 ```
 helm uninstall rustfs -n rustfs
 ```
+
+## For Traefik user
+
+If you use traefik to expose service, you should configure `leastconn` and `session sticky`. 
+
+```
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rustfs-route
+  namespace: rustfs
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`jhma.jihulab.net`)
+      kind: Rule
+      services:
+        - name: rustfs-svc
+          port: 80
+          strategy: leastconn
+          sticky:
+            cookie:
+              name: rustfs-cookie
+```
