@@ -2,6 +2,24 @@
 
 You can use this helm chart to deploy rustfs on k8s cluster.
 
+## Parameters Overview
+
+| parameter | description | default value |
+| -- | -- | -- |
+| replicaCount   | Number of cluster nodes.   |   4 or 16(Only support currently). |
+|  image.repository  | docker image repository.   |  rustfs/rustfs.  |
+| image.tag | the tag for rustfs docker image | "latest" |
+| secret.rustfs.access_key | RustFS Acccess Key ID | `rustfsadmin` |
+| secret.rustfs.secret_key | RustFS Secret Key ID | `rustfsadmin` |
+| storageclass.name | The name for StroageClass. | `local-path` |
+
+
+**NOTE**: [`local-path`](https://github.com/rancher/local-path-provisioner) is used by k3s. If you want to use `local-path`, running the command,
+
+```
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.32/deploy/local-path-storage.yaml
+```
+
 ## Requirement
 
 * Helm V3
